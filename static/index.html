@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en" xml:lang="en">
+  <head>
+    <title>Courier - Yet Another Relay Service</title>
+    <meta charset="utf-8"/>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+    <meta name="robots" content="index,follow"/>
+    <meta name="description" content="Yet another ActivityPub relay service"/>
+    <meta name="keywords" content="activitypub relay courier"/>
+    <meta name="language" content="en"/>
+    <meta name="author" content="mlatus"/>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <header>
+      <h1>#Courier</h1>
+      <p>Yet another ActivityPub relay service</p>
+    </header>
+
+    <section>
+      <p>
+        With this service provides relay endpoints for you to customize.
+        In Mastodon's <b>preferences</b> go to:
+      </p>
+      <ol>
+        <li>Administration</li>
+        <li>Relay</li>
+        <li>Click the button to setup a new relay</li>
+        <li>Generate a relay address below</li>
+        <li>Copy &amp; paste into Mastodon's preferences</li>
+      </ol>
+
+      <p>In Misskey's <b>Control Panel</b> go to:
+      <ol>
+        <li>Relay</li>
+        <li>Click the button to add a new relay</li>
+        <li>Generate a relay address below</li>
+        <li>Copy &amp; paste into Mastodon's preferences</li>
+      </ol>
+    </section>
+
+    <section class="boxes">
+      <noscript>
+        <h2>
+          Please enable JavaScript!
+        </h2>
+      </noscript>
+      <article>
+        <h2>Fetch replies of posts appear on the global timeline:</h2>
+        <pre id="completion-url"></pre>
+      </article>
+      <article>
+        <h2>Fetch trending posts of another instance</h2>
+        <div>
+          <input id="trends" len="20" placeholder="example.xyz"/>
+        </div>
+        <pre id="trends-url"></pre>
+      </article>
+    </section>
+
+    <footer>
+      <p>
+        <a href="https://github.com/Ninlives/courier">source</a>
+        •
+        by <a rel="me" href="https://fullof.buzz/@mlatus">@mlatus&#173;@fullof.buzz</a>
+      </p>
+    </footer>
+
+    <script type="text/javascript" src="urlgen.js">
+    </script>
+  </body>
+</html>
