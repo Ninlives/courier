@@ -186,27 +186,30 @@ impl FediApi {
         Ok(context.descendants)
     }
 
+    fn misskey_post_supplement_uri(host: &str, post: &mut Map<String, Value>) -> Result<(), Error> {
+        let id_value = post.get("id")
+            .ok_or_else(||Error::Api(format!("Failed to parse response from {host}: missing field `id`")))?
+            .clone();
+        let id = id_value.as_str()
+            .ok_or_else(||Error::Api(format!("Failed to parse response from {host}: `id` is not string")))?;
+        post.entry("uri".to_string()).or_insert(serde_json::to_value(
+                format!("https://{}/notes/{}", host, id))?);
+
+        if let Some(Value::Object(renote)) = post.get_mut("renote") {
+            Self::misskey_post_supplement_uri(host, renote)?;
+        }
+
+        if let Some(Value::Object(reply)) = post.get_mut("reply") {
+            Self::misskey_post_supplement_uri(host, reply)?;
+        }
+
+        Ok(())
+    }
+
     async fn misskey_posts_from_response(host: &str, response: reqwest::Response) -> Result<Vec<Post>, Error> {
-        let supplement_uri = |p: &mut Map<String, Value>| -> Result<(), Error> {
-            let id_value = p.get("id")
-                           .ok_or_else(||Error::Api(format!("Failed to parse response from {host}: missing field `id`")))?
-                           .clone();
-            let id = id_value.as_str()
-                             .ok_or_else(||Error::Api(format!("Failed to parse response from {host}: `id` is not string")))?;
-            p.entry("uri".to_string()).or_insert(serde_json::to_value(
-                 format!("https://{}/notes/{}", host, id))?);
-            Ok(())
-        };
         let mut posts: Vec<Map<String, Value>> = response.json().await?;
         for post in &mut posts {
-            supplement_uri(post)?;
-            if let Some(Value::Object(renote)) = post.get_mut("renote") {
-                supplement_uri(renote)?;
-            }
-
-            if let Some(Value::Object(reply)) = post.get_mut("reply") {
-                supplement_uri(reply)?;
-            }
+            Self::misskey_post_supplement_uri(host, post)?;
         }
         let value = serde_json::to_value(posts)?;
         Ok(serde_json::from_value(value)?)
