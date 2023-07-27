@@ -277,20 +277,34 @@ impl FediApi {
 
     #[async_recursion]
     async fn misskey_get_replies(uri: &str, host: &str, timeline_id: &str, client: &Client) -> Result<Vec<Post>, Error> {
-        let replies_url = format!("https://{}/api/notes/replies", &host);
+        let replies_url = format!("https://{}/api/notes/children", &host);
 
-        let res = client.post(replies_url)
-            .json(&json!({ "noteId": timeline_id }))
-            .timeout(Duration::MAX)
-            .send()
-            .await
-            .map_err(Error::Http)?;
-        if res.status() != StatusCode::OK {
-            return Err(Error::Api(format!("Failed to get replies of {}: status: {}, response: {}",
-                                           uri, res.status(), res.text().await?)));
+        let mut replies: Vec<Post> = vec![];
+        let mut since_id = String::from("0");
+        loop {
+            let res = client.post(replies_url.clone())
+                .json(&json!({ "noteId": timeline_id, "sinceId": since_id, "limit": 100 }))
+                .timeout(Duration::MAX)
+                .send()
+                .await
+                .map_err(Error::Http)?;
+            if res.status() != StatusCode::OK {
+                return Err(Error::Api(format!("Failed to get replies of {}: status: {}, response: {}",
+                                               uri, res.status(), res.text().await?)));
+            }
+
+            let mut new_replies: Vec<Post> = Self::misskey_posts_from_response(host, res).await?;
+            if new_replies.is_empty() {
+                break;
+            }
+            new_replies.sort_by_key(|p| p.created_at.clone().unwrap());
+            since_id = new_replies.last()
+                                  .unwrap()
+                                  .timeline_id.clone()
+                                  .ok_or_else(||Error::Api("Post does not have a timeline id".to_string()))?;
+            replies.append(&mut new_replies);
         }
 
-        let replies: Vec<Post> = Self::misskey_posts_from_response(host, res).await?;
         let recursive_replies = join_all(replies.clone()
                                          .into_iter()
                                          .map(|p| async move {
