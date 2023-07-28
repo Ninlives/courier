@@ -12,8 +12,7 @@ Many thanks to [@Astro](https://github.com/astro) for sharing his amazing work.
 `courier` will try its best to carry the following data to your server:
 
 1. **Completion**: The replies to posts appeared on the global timeline.
-   Since ActivityPub does not define a collection for post replies (I hope there will be one in the future),
-   most implementations will not proactively fetch replies for posts that originated from other instances.
+   Most ActivityPub implementations will not proactively fetch replies for posts that originated from other instances.
    Therefore, users are not guranteed to see all replies to a post, unless all participants are followed by someone in the current server, or jump to the original server to get a complete view.
    This is the main reason why I develop `courier`.
    `courier` will try to fetch all replies from remotes and send them to the current server, so no need to jump across different instances.
